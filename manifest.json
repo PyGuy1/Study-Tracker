@@ -2,7 +2,7 @@
   "name": "Study Tracker",
   "short_name": "Study Tracker",
   "description": "A professional, offline-capable study tracking application by PyGuy.",
-  "start_url": ".",
+  "start_url": "index.html",
   "scope": ".",
   "display": "standalone",
   "background_color": "#020617",
