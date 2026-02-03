@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta name="theme-color" content="#020617">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Tracker</title>
+    <meta name="description" content="A professional, offline-capable study tracking application.">
+    <!-- Meta Robots -->
+    <meta name="robots" content="index, follow" />
+
+    <!-- Meta Keywords -->
+    <meta name="keywords"
+        content="PyGuy, developer tools, online utilities, web projects, study tracker, Study, Study Tracker, Track, tracker, web development" />
+
+    <!-- Open Graph (OG) Tags -->
+    <meta property="og:site_name" content="Study Tracker - PyGuy">
+    <meta property="og:title" content="Study Tracker | Offline study tracking by PyGuy" />
+    <meta property="og:description" content="A professional, offline-capable study tracking application." />
+    <meta property="og:url" content="https://study-tracker-pyguy.free.nf/" />
+    <meta property="og:image" content="https://study-tracker.pyguy.free.nf/Study-Tracker-poster.png" />
+    <meta property="og:type" content="website" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
+
+    <!-- iOS Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+
+    <!-- Structured Data (Schema.org JSON-LD) -->
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Website",
+  "name": "Study Tracker - PyGuy",
+  "url": "https://study-tracker.pyguy.free.nf/",
+  "logo": "https://study-tracker.pyguy.free.nf/Study-tracker.png",
+  "description": "A professional, offline-capable study tracking application by PyGuy."
+}
+</script>
+    <link rel="shortcut icon" href="/Study-tracker.png" type="image/x-icon" />
+
+
+    <!-- Fonts: Inter for that clean, Google-like aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        },
+                        dark: {
+                            bg: '#0f172a',
+                            surface: '#1e293b',
+                            border: '#334155'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Fix Mobile Scrolling */
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            position: fixed;
+            /* Prevents "rubber-banding" on iOS */
+            overflow: hidden;
+        }
+
+        #main-content {
+            flex: 1;
+            height: 100%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 100px;
+            /* Smooth mobile scroll */
+        }
+
+        /* Planner Grid logic */
+        .planner-grid-container {
+            display: grid;
+            grid-template-columns: 60px repeat(7, 1fr);
+            /* No longer using rows for structure, just columns */
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Utility */
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+        }
+
+        .dark .glass {
+            background: rgba(30, 41, 59, 0.7);
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Chart Tooltip */
+        .chart-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 50;
+        }
+
+        #mobile-overlay.hidden {
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-gray-50 text-slate-800 dark:bg-dark-bg dark:text-slate-100 transition-colors duration-300 antialiased overflow-hidden min-h-screen flex">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[60] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden backdrop-blur-sm"
+        onclick="app.toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar"
+        class="fixed lg:relative z-50 w-64 h-full bg-white dark:bg-dark-surface border-r border-gray-200 dark:border-dark-border transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col">
+        <div class="p-6 flex items-center gap-3">
+            <div
+                class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+                <i data-lucide="graduation-cap"></i>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight">Study<span class="text-brand-600">Tracker</span></h1>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
+            <button onclick="app.navigate('dashboard')"
+                class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 active-nav">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+            </button>
+            <button onclick="app.navigate('timer')"
+                class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                <i data-lucide="timer" class="w-5 h-5"></i> Focus Timer
+            </button>
+            <button onclick="app.navigate('planner')"
+                class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                <i data-lucide="calendar" class="w-5 h-5"></i> Planner
+            </button>
+            <button onclick="app.navigate('tasks')"
+                class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                <i data-lucide="check-square" class="w-5 h-5"></i> Tasks & Notes
+            </button>
+            <button onclick="app.navigate('exams')"
+                class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                <i data-lucide="file-text" class="w-5 h-5"></i> Exams
+            </button>
+            <button onclick="app.navigate('analytics')"
+                class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Analytics
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-gray-200 dark:border-dark-border">
+            <button onclick="app.navigate('settings')"
+                class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+                <i data-lucide="settings" class="w-5 h-5"></i> Settings
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="main-content" class="flex-1 overflow-y-auto overscroll-contain">
+        <!-- Header -->
+        <header
+            class="h-16 border-b border-gray-200 dark:border-dark-border bg-white/80 dark:bg-dark-bg/80 backdrop-blur-md flex items-center justify-between px-6 z-30">
+            <button onclick="app.toggleSidebar()"
+                class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+
+            <h2 id="page-title" class="text-lg font-semibold capitalize hidden md:block">Dashboard</h2>
+
+            <div class="flex items-center gap-4">
+                <div
+                    class="flex items-center gap-2 px-3 py-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full text-xs font-medium">
+                    <i data-lucide="flame" class="w-4 h-4"></i>
+                    <span id="streak-display">0 Day Streak</span>
+                </div>
+                <button onclick="app.toggleTheme()"
+                    class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i id="theme-icon" data-lucide="moon" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Views Container -->
+        <div id="views-container" class="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth relative">
+
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="view-section space-y-6 animate-fade-in">
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div
+                        class="bg-white dark:bg-dark-surface p-5 rounded-xl border border-gray-200 dark:border-dark-border shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Total Study Time</p>
+                                <h3 id="dash-total-time" class="text-2xl font-bold mt-1">0h 0m</h3>
+                            </div>
+                            <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 rounded-lg">
+                                <i data-lucide="clock" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-dark-surface p-5 rounded-xl border border-gray-200 dark:border-dark-border shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Sessions Completed</p>
+                                <h3 id="dash-sessions" class="text-2xl font-bold mt-1">0</h3>
+                            </div>
+                            <div class="p-2 bg-purple-50 dark:bg-purple-900/30 text-purple-600 rounded-lg">
+                                <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-dark-surface p-5 rounded-xl border border-gray-200 dark:border-dark-border shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Next Exam</p>
+                                <h3 id="dash-next-exam" class="text-lg font-bold mt-1 truncate">No exams</h3>
+                                <p id="dash-exam-days" class="text-xs text-gray-400 mt-1">---</p>
+                            </div>
+                            <div class="p-2 bg-red-50 dark:bg-red-900/30 text-red-600 rounded-lg">
+                                <i data-lucide="alert-circle" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-dark-surface p-5 rounded-xl border border-gray-200 dark:border-dark-border shadow-sm">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Tasks Due</p>
+                                <h3 id="dash-tasks-due" class="text-2xl font-bold mt-1">0</h3>
+                            </div>
+                            <div class="p-2 bg-green-50 dark:bg-green-900/30 text-green-600 rounded-lg">
+                                <i data-lucide="list-todo" class="w-5 h-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Today's Plan -->
+                    <div
+                        class="lg:col-span-2 bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-border shadow-sm p-6">
+                        <h3 class="font-semibold mb-4 flex items-center gap-2">
+                            <i data-lucide="calendar-check" class="w-4 h-4 text-brand-500"></i> Today's Schedule
+                        </h3>
+                        <div id="dash-schedule-list" class="space-y-3">
+                            <!-- Populated by JS -->
+                            <div class="text-center py-8 text-gray-400">No sessions scheduled for today.</div>
+                        </div>
+                    </div>
+
+                    <!-- Mini Timer CTA -->
+                    <div
+                        class="bg-gradient-to-br from-brand-600 to-brand-800 rounded-xl shadow-lg p-6 text-white flex flex-col justify-between relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10">
+                            <i data-lucide="timer" class="w-32 h-32"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">Ready to focus?</h3>
+                            <p class="text-brand-100 text-sm mb-6">Start a Pomodoro session to boost your productivity.
+                            </p>
+                        </div>
+                        <button onclick="app.navigate('timer')"
+                            class="bg-white text-brand-600 px-4 py-2 rounded-lg font-semibold shadow-sm hover:bg-gray-50 transition-colors w-full">
+                            Open Timer
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timer View -->
+            <div id="view-timer" class="view-section hidden space-y-6 animate-fade-in max-w-2xl mx-auto">
+                <div
+                    class="bg-white dark:bg-dark-surface rounded-2xl border border-gray-200 dark:border-dark-border shadow-sm p-8 text-center relative overflow-hidden">
+                    <!-- Progress Ring Background (CSS Only) -->
+                    <div class="mb-8 relative z-10">
+                        <div
+                            class="inline-flex items-center justify-center w-64 h-64 rounded-full border-8 border-gray-100 dark:border-gray-800 relative">
+                            <svg class="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="46" stroke="currentColor" stroke-width="8" fill="transparent"
+                                    class="text-gray-100 dark:text-gray-800" />
+                                <circle id="timer-ring" cx="50" cy="50" r="46" stroke="currentColor" stroke-width="8"
+                                    fill="transparent" stroke-dasharray="289.026" stroke-dashoffset="0"
+                                    class="text-brand-500 transition-all duration-1000 ease-linear" />
+                            </svg>
+                            <div class="text-center">
+                                <div id="timer-display" class="text-6xl font-bold font-mono tracking-tighter">25:00
+                                </div>
+                                <div id="timer-status"
+                                    class="text-sm text-gray-500 font-medium uppercase tracking-widest mt-2">FOCUS</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="flex justify-center gap-4 mb-8">
+                        <button id="btn-timer-toggle"
+                            class="w-16 h-16 rounded-full bg-brand-600 hover:bg-brand-700 text-white flex items-center justify-center shadow-lg shadow-brand-500/30 transition-all active:scale-95">
+                            <i data-lucide="play" class="w-8 h-8 ml-1"></i>
+                        </button>
+                        <button id="btn-timer-reset"
+                            class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 flex items-center justify-center transition-all active:scale-95">
+                            <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+
+                    <!-- Mode Switcher -->
+                    <div class="inline-flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl">
+                        <button onclick="Timer.setMode('pomodoro')"
+                            class="px-4 py-2 rounded-lg text-sm font-medium transition-all"
+                            id="mode-pomodoro">Pomodoro</button>
+                        <button onclick="Timer.setMode('shortBreak')"
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-gray-500 transition-all"
+                            id="mode-shortBreak">Short Break</button>
+                        <button onclick="Timer.setMode('longBreak')"
+                            class="px-4 py-2 rounded-lg text-sm font-medium text-gray-500 transition-all"
+                            id="mode-longBreak">Long Break</button>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+                        <label class="text-sm text-gray-500 mb-2 block">Tag Subject</label>
+                        <select id="timer-subject"
+                            class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-dark-border rounded-lg px-4 py-2 w-full max-w-xs mx-auto focus:ring-2 focus:ring-brand-500 outline-none">
+                            <option value="General">General</option>
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Planner View -->
+            <div id="view-planner" class="view-section hidden space-y-6 animate-fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <h3 class="text-xl font-bold">Weekly Schedule</h3>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="Planner.toggleEditMode()" id="btn-planner-edit"
+                            class="btn-secondary flex items-center gap-2 px-3 py-2 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border hover:bg-gray-50 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium transition-colors">
+                            <i data-lucide="edit-3" class="w-4 h-4"></i> <span id="text-planner-edit">Edit</span>
+                        </button>
+
+                        <button onclick="Planner.confirmReset()"
+                            class="btn-secondary flex items-center gap-2 px-3 py-2 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border hover:bg-red-50 hover:text-red-600 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium transition-colors">
+                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                        </button>
+
+                        <button onclick="Planner.openAddModal()"
+                            class="btn-primary flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Add Slot
+                        </button>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-border shadow-sm flex flex-col h-[700px]">
+
+                    <div
+                        class="planner-grid-container border-b border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-gray-800/50 z-10">
+                        <div class="p-3 text-xs font-semibold text-center text-gray-400">GMT</div>
+                        <div class="p-3 font-semibold text-center">Mon</div>
+                        <div class="p-3 font-semibold text-center">Tue</div>
+                        <div class="p-3 font-semibold text-center">Wed</div>
+                        <div class="p-3 font-semibold text-center">Thu</div>
+                        <div class="p-3 font-semibold text-center">Fri</div>
+                        <div class="p-3 font-semibold text-center text-red-500">Sat</div>
+                        <div class="p-3 font-semibold text-center text-red-500">Sun</div>
+                    </div>
+
+                    <div class="overflow-y-auto flex-1 relative custom-scrollbar" id="planner-scroll-area">
+                        <div id="current-time-line"
+                            class="absolute left-0 w-full border-t-2 border-red-500 z-20 pointer-events-none hidden flex items-center">
+                            <div class="absolute -left-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                        </div>
+
+                        <div id="planner-grid" class="planner-grid-container relative min-h-[1440px]">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <dialog id="modal-edit-slot" class="modal rounded-xl p-0 backdrop:bg-black/50">
+                <div class="bg-white dark:bg-dark-surface w-full max-w-md flex flex-col shadow-xl">
+                    <div class="p-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                        <h3 class="font-bold text-lg">Edit Slot</h3>
+                        <button onclick="document.getElementById('modal-edit-slot').close()"
+                            class="p-1 hover:bg-gray-100 rounded"><i data-lucide="x"></i></button>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <input type="hidden" id="edit-slot-id">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Subject</label>
+                            <input type="text" id="edit-slot-subject"
+                                class="w-full p-2 border rounded-lg dark:bg-dark-bg dark:border-dark-border">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Start</label>
+                                <input type="time" id="edit-slot-start"
+                                    class="w-full p-2 border rounded-lg dark:bg-dark-bg dark:border-dark-border">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">End</label>
+                                <input type="time" id="edit-slot-end"
+                                    class="w-full p-2 border rounded-lg dark:bg-dark-bg dark:border-dark-border">
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center pt-4">
+                            <button onclick="Planner.deleteFromEditModal()"
+                                class="text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-medium transition">Delete
+                                Slot</button>
+                            <button onclick="Planner.saveEdit()"
+                                class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg font-medium transition">Save
+                                Changes</button>
+                        </div>
+                    </div>
+                </div>
+            </dialog>
+
+            <!-- Tasks View -->
+            <div id="view-tasks" class="view-section hidden space-y-6 animate-fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="space-y-4 relative">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-100">To-Do List</h3>
+                                <span
+                                    class="px-2 py-0.5 text-xs font-medium bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300 rounded-full"
+                                    id="task-count">0</span>
+                            </div>
+
+                            <button onclick="document.getElementById('add-task-modal').classList.remove('hidden')"
+                                class="group flex items-center gap-2 text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20 px-3 py-1.5 rounded-lg transition-all duration-200">
+                                <i data-lucide="plus" class="w-4 h-4 group-hover:scale-110 transition-transform"></i>
+                                <span>Add Task</span>
+                            </button>
+                        </div>
+
+                        <div
+                            class="bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-border shadow-sm flex flex-col h-[400px]">
+
+                            <ul id="task-list" class="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar relative">
+
+                                <div id="task-empty-state"
+                                    class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 text-gray-400 dark:text-gray-500">
+                                    <div class="bg-gray-50 dark:bg-dark-bg p-4 rounded-full mb-3">
+                                        <i data-lucide="clipboard-list" class="w-8 h-8 opacity-50"></i>
+                                    </div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No tasks yet</p>
+                                    <p class="text-xs mt-1 opacity-70">Click "Add Task" to get started</p>
+                                </div>
+
+                            </ul>
+                        </div>
+
+                        <div id="add-task-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+
+                            <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"
+                                onclick="document.getElementById('add-task-modal').classList.add('hidden')"></div>
+
+                            <div
+                                class="relative bg-white dark:bg-dark-surface rounded-xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-dark-border transform transition-all scale-100">
+
+                                <div class="p-6">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">New Task</h3>
+                                        <button
+                                            onclick="document.getElementById('add-task-modal').classList.add('hidden')"
+                                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                                            <i data-lucide="x" class="w-5 h-5"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label
+                                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Task
+                                                Description</label>
+                                            <input type="text" id="new-task-input"
+                                                class="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 outline-none transition-all placeholder:text-gray-400"
+                                                placeholder="e.g. Review Q3 financial report...">
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-end items-center gap-3 mt-6">
+                                        <button
+                                            onclick="document.getElementById('add-task-modal').classList.add('hidden')"
+                                            class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-bg rounded-lg transition-colors">
+                                            Cancel
+                                        </button>
+                                        <button onclick="tasks.handleModalSubmit()"
+                                            class="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm shadow-brand-600/20 transition-all hover:shadow-md">
+                                            Add Task
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes Column -->
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-bold">Quick Notes</h3>
+                        </div>
+                        <textarea id="quick-notes"
+                            class="w-full h-[400px] p-4 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/30 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-yellow-400 dark:text-yellow-100 leading-relaxed"
+                            placeholder="Type your thoughts here... (Auto-saved)"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exams View -->
+            <div id="view-exams" class="view-section hidden space-y-6 animate-fade-in">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold">Upcoming Exams</h3>
+                    <button onclick="exams.openAddModal()"
+                        class="btn-primary flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors">
+                        <i data-lucide="plus"></i> Add Exam
+                    </button>
+                </div>
+
+                <div id="exams-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Analytics View -->
+            <div id="view-analytics" class="view-section hidden space-y-6 animate-fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div
+                        class="bg-white dark:bg-dark-surface p-6 rounded-xl border border-gray-200 dark:border-dark-border shadow-sm">
+                        <h3 class="font-semibold mb-6">Study Distribution (Subject)</h3>
+                        <div class="h-64 flex items-end justify-around gap-2" id="chart-subjects">
+                            <!-- SVG Bar Chart Generated Here -->
+                        </div>
+                    </div>
+                    <div
+                        class="bg-white dark:bg-dark-surface p-6 rounded-xl border border-gray-200 dark:border-dark-border shadow-sm">
+                        <h3 class="font-semibold mb-6">Last 7 Days (Minutes)</h3>
+                        <div class="h-64 relative border-l border-b border-gray-200 dark:border-gray-700"
+                            id="chart-week">
+                            <!-- SVG Line Chart Generated Here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white dark:bg-dark-surface p-6 rounded-xl border border-gray-200 dark:border-dark-border shadow-sm">
+                    <h3 class="font-semibold mb-4">Recent Sessions</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-800">
+                                <tr>
+                                    <th class="px-6 py-3">Date</th>
+                                    <th class="px-6 py-3">Subject</th>
+                                    <th class="px-6 py-3">Duration</th>
+                                    <th class="px-6 py-3">Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="session-log-body" class="divide-y divide-gray-200 dark:divide-gray-700"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="view-settings" class="view-section hidden max-w-2xl mx-auto space-y-6 animate-fade-in">
+                <div
+                    class="bg-white dark:bg-dark-surface p-6 rounded-xl border border-gray-200 dark:border-dark-border shadow-sm space-y-6">
+                    <div>
+                        <h3 class="text-lg font-bold mb-4">Timer Settings</h3>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Pomodoro (min)</label>
+                                <input type="number" id="setting-pomo"
+                                    class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-dark-border rounded px-3 py-2"
+                                    value="25">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Short Break (min)</label>
+                                <input type="number" id="setting-short"
+                                    class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-dark-border rounded px-3 py-2"
+                                    value="5">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500 mb-1 block">Long Break (min)</label>
+                                <input type="number" id="setting-long"
+                                    class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-dark-border rounded px-3 py-2"
+                                    value="15">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-gray-200 dark:border-dark-border">
+                        <h3 class="text-lg font-bold mb-4">Subjects</h3>
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" id="new-subject-input" placeholder="Add subject..."
+                                class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-dark-border rounded px-3 py-2">
+                            <button onclick="settings.addSubject()"
+                                class="bg-brand-600 text-white px-4 py-2 rounded">Add</button>
+                        </div>
+                        <div id="settings-subjects-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <div class="pt-6 border-t border-gray-200 dark:border-dark-border">
+                        <h3 class="text-lg font-bold mb-4">Install Web App</h3>
+                        <div class="flex gap-2 mb-2">
+                            <button id="installBtn"
+                                class="btn-primary flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors">
+                                <i data-lucide="download"></i>Install App
+                            </button>
+                        </div>
+                        <div id="settings-subjects-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+
+
+
+                    <div class="pt-6 border-t border-gray-200 dark:border-dark-border">
+                        <h3 class="text-lg font-bold mb-4 text-red-500">Danger Zone</h3>
+                        <button onclick="settings.resetData()"
+                            class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white flex items-center gap-2">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>Reset All Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <dialog id="modal-planner" class="bg-transparent p-0 backdrop:bg-black/50 open:animate-fade-in z-50">
+        <div
+            class="bg-white dark:bg-dark-surface p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-dark-border m-4">
+            <h3 class="text-lg font-bold mb-4">Add Timetable Slot</h3>
+            <div class="space-y-3">
+                <select id="plan-day" class="w-full p-2 rounded border dark:bg-dark-bg dark:border-dark-border">
+                    <option value="Mon">Monday</option>
+                    <option value="Tue">Tuesday</option>
+                    <option value="Wed">Wednesday</option>
+                    <option value="Thu">Thursday</option>
+                    <option value="Fri">Friday</option>
+                    <option value="Sat">Saturday</option>
+                    <option value="Sun">Sunday</option>
+                </select>
+                <div class="flex gap-2">
+                    <input type="time" id="plan-start"
+                        class="w-full p-2 rounded border dark:bg-dark-bg dark:border-dark-border">
+                    <span class="self-center">-</span>
+                    <input type="time" id="plan-end"
+                        class="w-full p-2 rounded border dark:bg-dark-bg dark:border-dark-border">
+                </div>
+                <select id="plan-subject" class="w-full p-2 rounded border dark:bg-dark-bg dark:border-dark-border">
+                    <!-- Populated -->
+                </select>
+                <div class="flex justify-end gap-2 mt-4">
+                    <button onclick="document.getElementById('modal-planner').close()"
+                        class="px-4 py-2 text-gray-500">Cancel</button>
+                    <button onclick="planner.saveSlot()" class="bg-brand-600 text-white px-4 py-2 rounded">Save</button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="modal-exam" class="bg-transparent p-0 backdrop:bg-black/50 open:animate-fade-in z-50">
+        <div
+            class="bg-white dark:bg-dark-surface p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-dark-border m-4">
+            <h3 class="text-lg font-bold mb-4">Add Exam</h3>
+            <div class="space-y-3">
+                <select id="exam-subject" class="w-full p-2 rounded border dark:bg-dark-bg dark:border-dark-border">
+                    <!-- Populated -->
+                </select>
+                <input type="datetime-local" id="exam-date"
+                    class="w-full p-2 rounded border dark:bg-dark-bg dark:border-dark-border">
+                <input type="text" id="exam-syllabus" placeholder="Syllabus / Topics"
+                    class="w-full p-2 rounded border dark:bg-dark-bg dark:border-dark-border">
+                <div class="flex justify-end gap-2 mt-4">
+                    <button onclick="document.getElementById('modal-exam').close()"
+                        class="px-4 py-2 text-gray-500">Cancel</button>
+                    <button onclick="exams.saveExam()" class="bg-brand-600 text-white px-4 py-2 rounded">Save</button>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="modal-reset" class="bg-transparent p-0 backdrop:bg-black/50 open:animate-fade-in z-50">
+
+        <div
+            class="bg-white dark:bg-dark-surface p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-dark-border m-4">
+
+            <div class="flex items-center gap-3 mb-4">
+                <i data-lucide="alert-triangle" class="w-6 h-6 text-red-500"></i>
+                <h3 class="text-lg font-bold">Reset All Data</h3>
+            </div>
+
+            <p class="text-sm text-gray-500 mb-6">
+                This will permanently delete all data (tasks, sessions, exams, planner, notes).
+                This action cannot be undone.
+            </p>
+
+            <div class="flex justify-end gap-3">
+                <button onclick="document.getElementById('modal-reset').close()"
+                    class="px-4 py-2 text-sm rounded-lg bg-gray-100 dark:bg-gray-800">
+                    Cancel
+                </button>
+
+                <button onclick="settings.confirmReset()"
+                    class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white flex items-center gap-2">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    Reset
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog id="modal-delete" class="bg-transparent p-0 backdrop:bg-black/50 open:animate-fade-in z-50">
+
+        <div
+            class="bg-white dark:bg-dark-surface p-6 rounded-xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-dark-border m-4">
+
+            <div class="flex items-center gap-3 mb-4">
+                <i data-lucide="trash-2" class="w-6 h-6 text-red-500"></i>
+                <h3 id="delete-title" class="text-lg font-bold">Delete</h3>
+            </div>
+
+            <p id="delete-message" class="text-sm text-gray-500 mb-6">
+                Are you sure you want to delete this?
+            </p>
+
+            <div class="flex justify-end gap-3">
+                <button onclick="UI.closeDeleteModal()"
+                    class="px-4 py-2 text-sm rounded-lg bg-gray-100 dark:bg-gray-800">
+                    Cancel
+                </button>
+
+                <button onclick="UI.confirmDelete()"
+                    class="px-4 py-2 text-sm rounded-lg bg-red-600 text-white flex items-center gap-2">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </dialog>
+
+
+
+    <!-- App Logic -->
+    <script>
+
+        function syncThemeColor(theme) {
+            const meta = document.querySelector('meta[name="theme-color"]');
+            meta.setAttribute(
+                "content",
+                theme === "dark" ? "#0f172a" : "#2563eb"
+            );
+        }
+
+        /**
+         * StudyTracker Core Logic
+         * No frameworks, pure Vanilla JS + LocalStorage
+         */
+
+        // --- Store & State Management ---
+        const Store = {
+            key: 'studyTrackerData_v1',
+            state: {
+                user: { theme: 'light' },
+                settings: { pomodoro: 25, shortBreak: 5, longBreak: 15, subjects: ['Math', 'Science', 'History', 'English'] },
+                sessions: [], // { id, subject, duration, timestamp, type }
+                tasks: [], // { id, title, done }
+                exams: [], // { id, subject, date, syllabus }
+                timetable: [], // { id, day, start, end, subject }
+                notes: "",
+                streak: { count: 0, lastDate: null }
+            },
+
+            init() {
+                syncThemeColor(Store.state.user.theme);
+                const saved = localStorage.getItem(this.key);
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        this.state = { ...this.state, ...parsed };
+                        // Deep merge safeguards for settings could go here
+                    } catch (e) {
+                        console.error("Data corrupted, resetting", e);
+                    }
+                }
+                this.applyTheme();
+                this.checkStreak();
+            },
+
+            save() {
+                localStorage.setItem(this.key, JSON.stringify(this.state));
+                window.dispatchEvent(new CustomEvent('state-updated'));
+            },
+
+            applyTheme() {
+                const theme = this.state.user.theme;
+
+                if (theme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                    document.getElementById('theme-icon')?.setAttribute('data-lucide', 'sun');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.getElementById('theme-icon')?.setAttribute('data-lucide', 'moon');
+                }
+
+                // 🔥 Sync browser / PWA status bar color
+                const metaTheme = document.querySelector('meta[name="theme-color"]');
+                if (metaTheme) {
+                    metaTheme.setAttribute(
+                        'content',
+                        theme === 'dark' ? '#020617' : '#f8fafc'
+                    );
+                }
+
+                // Re-render lucide icons
+                lucide.createIcons();
+            },
+
+
+            checkStreak() {
+                const today = new Date().toDateString();
+                if (this.state.streak.lastDate !== today) {
+                    // Logic to reset streak if missed a day would go here
+                    // Simple logic: if lastDate was yesterday, keep, else reset (omitted for brevity)
+                }
+            },
+
+            logSession(duration, subject, type) {
+                this.state.sessions.push({
+                    id: Date.now(),
+                    subject,
+                    duration,
+                    timestamp: new Date().toISOString(),
+                    type
+                });
+
+                // Streak Logic
+                const today = new Date().toDateString();
+                if (this.state.streak.lastDate !== today) {
+                    this.state.streak.count++;
+                    this.state.streak.lastDate = today;
+                }
+
+                this.save();
+                App.toast(`Session saved: ${subject} (${Math.floor(duration / 60)}m)`);
+            }
+        };
+
+        // --- Utils ---
+        const Utils = {
+            id: () => Math.random().toString(36).substr(2, 9),
+            formatTime: (sec) => {
+                const m = Math.floor(sec / 60).toString().padStart(2, '0');
+                const s = (sec % 60).toString().padStart(2, '0');
+                return `${m}:${s}`;
+            },
+            formatDate: (iso) => new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+            getDaysDiff: (dateStr) => {
+                const diff = new Date(dateStr) - new Date();
+                return Math.ceil(diff / (1000 * 60 * 60 * 24));
+            }
+        };
+
+        // --- Timer Module ---
+        const Timer = {
+            interval: null,
+            timeLeft: 25 * 60,
+            mode: 'pomodoro', // pomodoro, shortBreak, longBreak
+            isRunning: false,
+
+            init() {
+                document.getElementById('btn-timer-toggle').addEventListener('click', () => this.toggle());
+                document.getElementById('btn-timer-reset').addEventListener('click', () => this.reset());
+                this.updateDisplay();
+            },
+
+            setMode(mode) {
+                this.pause();
+                this.mode = mode;
+                document.querySelectorAll('[id^="mode-"]').forEach(el => {
+                    el.classList.remove('text-brand-600', 'bg-white', 'shadow-sm');
+                    el.classList.add('text-gray-500');
+                });
+
+                const active = document.getElementById(`mode-${mode}`);
+                active.classList.remove('text-gray-500');
+                active.classList.add('text-brand-600', 'bg-white', 'shadow-sm');
+
+                document.getElementById(`mode-${mode}`).classList.add('text-brand-600', 'bg-white', 'shadow-sm');
+
+                // Get duration from settings
+                let min = Store.state.settings.pomodoro;
+                if (mode === 'shortBreak') min = Store.state.settings.shortBreak;
+                if (mode === 'longBreak') min = Store.state.settings.longBreak;
+
+
+                this.timeLeft = min * 60;
+                this.updateDisplay();
+                document.getElementById('timer-status').textContent = mode === 'pomodoro' ? 'FOCUS' : 'REST';
+            },
+
+            toggle() {
+                if (this.isRunning) this.pause();
+                else this.start();
+            },
+
+            start() {
+                if (this.isRunning) return;
+                this.isRunning = true;
+
+                const btn = document.getElementById('btn-timer-toggle');
+                if (btn) {
+                    btn.innerHTML = '<i data-lucide="pause" class="w-8 h-8 ml-1"></i>';
+                    lucide.createIcons();
+                }
+
+                this.interval = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateDisplay();
+                    if (this.timeLeft <= 0) {
+                        this.complete();
+                    }
+                }, 1000);
+            },
+
+            pause() {
+                this.isRunning = false;
+                clearInterval(this.interval);
+
+                const btn = document.getElementById('btn-timer-toggle');
+                if (btn) {
+                    btn.innerHTML = '<i data-lucide="play" class="w-8 h-8 ml-1"></i>';
+                    lucide.createIcons();
+                }
+            },
+
+            reset() {
+                this.pause();
+                this.setMode(this.mode);
+            },
+
+            complete() {
+                this.pause();
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+                audio.play().catch(e => console.log("Audio play failed interaction needed"));
+
+                if (this.mode === 'pomodoro') {
+                    const subject = document.getElementById('timer-subject').value;
+                    const duration = parseInt(document.getElementById('setting-pomo').value) * 60;
+                    Store.logSession(duration, subject, 'Pomodoro');
+                    App.toast("Session Complete! Take a break.");
+                } else {
+                    App.toast("Break over! Back to work.");
+                }
+
+                this.reset();
+            },
+
+            syncWithSettings(force = false) {
+                const newDuration = this.getDuration();
+
+                if (this.isRunning && !force) {
+                    App.toast("Reset timer to apply new duration");
+                    return;
+                }
+
+                this.totalTime = newDuration;
+                this.timeLeft = this.getDuration();
+                this.updateDisplay();
+            },
+
+
+            getDuration() {
+                switch (this.mode) {
+                    case 'pomodoro':
+                        return Store.state.settings.pomodoro * 60;
+
+                    case 'shortBreak':
+                        return Store.state.settings.shortBreak * 60;
+
+                    case 'longBreak':
+                        return Store.state.settings.longBreak * 60;
+
+                    default:
+                        console.warn('Unknown timer mode:', this.mode);
+                        return Store.state.settings.pomodoro * 60;
+                }
+            },
+
+
+            updateDisplay() {
+                document.getElementById('timer-display').textContent = Utils.formatTime(this.timeLeft);
+
+                // Ring Animation
+                const ring = document.getElementById('timer-ring');
+                const totalTime = (this.mode === 'pomodoro' ? Store.state.settings.pomodoro :
+                    (this.mode === 'shortBreak' ? Store.state.settings.shortBreak : Store.state.settings.longBreak)) * 60;
+                const offset = 289 - (289 * (1 - (this.timeLeft / totalTime))); // 289 is approx circum
+                ring.style.strokeDashoffset = -offset;
+            }
+        };
+
+
+        //--- Planner module---
+        const Planner = {
+            days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            isEditing: false,
+            pxPerHour: 60, // 1 hour = 60px height
+
+            init() {
+                // Run once on load
+                this.render();
+                this.updateCurrentTimeLine();
+                setInterval(() => this.updateCurrentTimeLine(), 60000); // Update red line every minute
+            },
+
+            toggleEditMode() {
+                this.isEditing = !this.isEditing;
+
+                const btn = document.getElementById('btn-planner-edit');
+                const text = document.getElementById('text-planner-edit');
+
+                if (this.isEditing) {
+                    btn.classList.add('bg-brand-50', 'text-brand-600', 'border-brand-200');
+                    text.textContent = 'Done';
+                } else {
+                    btn.classList.remove('bg-brand-50', 'text-brand-600', 'border-brand-200');
+                    text.textContent = 'Edit';
+                }
+                this.render();
+            },
+
+            // Convert "HH:MM" to minutes from 00:00
+            toMinutes(timeStr) {
+                const [h, m] = timeStr.split(':').map(Number);
+                return h * 60 + m;
+            },
+
+            // Generate a consistent color based on subject string
+            getColor(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const hue = Math.abs(hash % 360);
+                return `hsla(${hue}, 70%, 50%, 0.15)`; // background
+            },
+            getBorderColor(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const hue = Math.abs(hash % 360);
+                return `hsl(${hue}, 70%, 45%)`; // border/text
+            },
+
+            render() {
+                const grid = document.getElementById('planner-grid');
+                grid.innerHTML = '';
+                const totalHeight = 24 * this.pxPerHour; // 00:00 to 24:00
+
+                // 1. Render Time Column (Left Axis)
+                const timeCol = document.createElement('div');
+                timeCol.className = "relative border-r border-gray-200 dark:border-dark-border bg-gray-50/30";
+                timeCol.style.height = `${totalHeight}px`;
+
+                for (let h = 0; h < 24; h++) {
+                    const label = document.createElement('div');
+                    label.className = "absolute w-full text-center text-xs text-gray-400 font-mono";
+                    label.style.top = `${h * this.pxPerHour}px`;
+                    label.style.transform = "translateY(-50%)"; // Center on line
+                    // Convert to 12h format for display if preferred, sticking to 24h for grid logic
+                    label.textContent = `${h.toString().padStart(2, '0')}:00`;
+                    if (h !== 0) timeCol.appendChild(label); // Skip 00:00 overlapping header
+                }
+                grid.appendChild(timeCol);
+
+                // 2. Render Day Columns
+                this.days.forEach(day => {
+                    const dayCol = document.createElement('div');
+                    dayCol.className = "relative border-r border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors";
+                    dayCol.style.height = `${totalHeight}px`;
+
+                    // Draw horizontal hour lines
+                    for (let h = 1; h < 24; h++) {
+                        const line = document.createElement('div');
+                        line.className = "absolute w-full border-t border-gray-100 dark:border-gray-800";
+                        line.style.top = `${h * this.pxPerHour}px`;
+                        dayCol.appendChild(line);
+                    }
+
+                    // Find slots for this day
+                    const daySlots = Store.state.timetable.filter(s => s.day === day);
+
+                    daySlots.forEach(slot => {
+                        const startMin = this.toMinutes(slot.start);
+                        const endMin = this.toMinutes(slot.end);
+
+                        // --- Overnight Logic ---
+                        // If end < start (e.g., 22:00 to 02:00), we render TWO blocks.
+                        // Block 1: Start -> 23:59 (Bottom)
+                        // Block 2: 00:00 -> End (Top)
+
+                        if (endMin <= startMin) {
+                            // Part 1: Start to Midnight
+                            this.renderSlot(dayCol, slot, startMin, 1440, "bottom");
+                            // Part 2: Midnight to End
+                            this.renderSlot(dayCol, slot, 0, endMin, "top");
+                        } else {
+                            // Normal slot
+                            this.renderSlot(dayCol, slot, startMin, endMin, "normal");
+                        }
+                    });
+
+                    grid.appendChild(dayCol);
+                });
+
+                // Re-initialize icons
+                lucide.createIcons();
+            },
+
+            renderSlot(container, slot, startMin, endMin, positionType) {
+                const duration = endMin - startMin;
+                const top = (startMin / 60) * this.pxPerHour;
+                const height = (duration / 60) * this.pxPerHour;
+
+                const el = document.createElement('div');
+                const bg = this.getColor(slot.subject);
+                const border = this.getBorderColor(slot.subject);
+
+                // 'force-solid-left' (from CSS) guarantees the indicator line is solid
+                el.className = `absolute inset-x-1 border-l-4 force-solid-left text-xs p-1 overflow-hidden cursor-pointer shadow-sm group transition-all animate-fade-in hover:z-10`;
+
+                el.style.top = `${top}px`;
+                el.style.height = `${height}px`;
+                el.style.backgroundColor = bg;
+                el.style.borderLeftColor = border;
+                el.style.color = border;
+
+                // Handle Top/Bottom borders for Split Slots
+                if (positionType === "bottom") {
+                    // PM Part: Flat bottom, no bottom border (or dotted)
+                    el.classList.add("rounded-t", "rounded-b-none");
+                    el.style.borderBottom = `2px dotted ${border}`; // Dotted bottom to indicate continuation
+                    el.style.opacity = "0.9";
+                } else if (positionType === "top") {
+                    // AM Part: Flat top, no top border
+                    el.classList.add("rounded-b", "rounded-t-none");
+                    el.style.borderTop = "none";
+                    el.style.opacity = "0.9";
+                } else {
+                    // Normal Slot
+                    el.classList.add("rounded");
+                }
+
+                let contentHtml = `<div class="font-bold truncate">${slot.subject}</div>`;
+                if (height > 30) {
+                    contentHtml += `<div class="opacity-75 text-[10px]">${slot.start} - ${slot.end}</div>`;
+                }
+
+                if (this.isEditing) {
+                    el.classList.add("ring-2", "ring-offset-1", "ring-gray-300");
+                    contentHtml += `<div class="absolute top-1 right-1 bg-white rounded-full p-0.5 shadow"><i data-lucide="pencil" class="w-3 h-3 text-gray-600"></i></div>`;
+                    el.onclick = (e) => { e.stopPropagation(); this.openEditModal(slot); };
+                }
+
+                el.innerHTML = contentHtml;
+                container.appendChild(el);
+            },
+
+            openAddModal() {
+                document.getElementById('modal-planner').showModal();
+                window.dispatchEvent(new CustomEvent('subjects-updated')); // If you have subject suggestions
+            },
+
+            saveSlot() {
+                const day = document.getElementById('plan-day').value;
+                const start = document.getElementById('plan-start').value;
+                const end = document.getElementById('plan-end').value;
+                const subject = document.getElementById('plan-subject').value;
+
+                if (!start || !end || !subject) return App.toast("Please fill all fields", "error");
+
+                Store.state.timetable.push({ id: Date.now().toString(), day, start, end, subject });
+                Store.save();
+                document.getElementById('modal-planner').close();
+                this.render();
+                App.toast("Slot added", "success");
+            },
+
+            // --- Modal Logic ---
+
+            confirmReset() {
+                UI.openDeleteModal({
+                    title: "Reset Planner",
+                    message: "This will clear your entire weekly schedule. Are you sure?",
+                    onConfirm: () => {
+                        Store.state.timetable = [];
+                        Store.save();
+                        this.render();
+                        App.toast("Planner reset", "success");
+                    }
+                });
+            },
+
+            openEditModal(slot) {
+                const modal = document.getElementById('modal-edit-slot');
+                document.getElementById('edit-slot-id').value = slot.id;
+                document.getElementById('edit-slot-subject').value = slot.subject;
+                document.getElementById('edit-slot-start').value = slot.start;
+                document.getElementById('edit-slot-end').value = slot.end;
+                modal.showModal();
+            },
+
+            saveEdit() {
+                const id = document.getElementById('edit-slot-id').value;
+                const subject = document.getElementById('edit-slot-subject').value;
+                const start = document.getElementById('edit-slot-start').value;
+                const end = document.getElementById('edit-slot-end').value;
+
+                const index = Store.state.timetable.findIndex(s => s.id === id);
+                if (index !== -1) {
+                    Store.state.timetable[index] = { ...Store.state.timetable[index], subject, start, end };
+                    Store.save();
+                    this.render();
+                    document.getElementById('modal-edit-slot').close();
+                    App.toast("Slot updated", "success");
+                }
+            },
+
+            deleteFromEditModal() {
+                const id = document.getElementById('edit-slot-id').value;
+
+                // Confirmation before delete
+                if (confirm("Delete this slot permanently?")) {
+                    Store.state.timetable = Store.state.timetable.filter(s => s.id !== id);
+                    Store.save();
+                    this.render();
+                    document.getElementById('modal-edit-slot').close();
+                    App.toast("Slot deleted", "success");
+                }
+            },
+
+            // --- Extra: Current Time Line ---
+            updateCurrentTimeLine() {
+                const now = new Date();
+                const line = document.getElementById('current-time-line');
+                const grid = document.getElementById('planner-grid');
+
+                // Calculate minutes from midnight
+                const minutes = now.getHours() * 60 + now.getMinutes();
+                const top = (minutes / 60) * this.pxPerHour;
+
+                line.style.top = `${top}px`;
+                line.classList.remove('hidden');
+
+                // Scroll to current time on first load (optional)
+                if (!this.scrolled) {
+                    document.getElementById('planner-scroll-area').scrollTop = top - 200;
+                    this.scrolled = true;
+                }
+            }
+        };
+
+        // --- Tasks Module ---
+        const Tasks = {
+            render() {
+                const list = document.getElementById('task-list');
+                const countBadge = document.getElementById('task-count');
+
+                // 1. Update Task Count Badge (if it exists in HTML)
+                if (countBadge) countBadge.textContent = Store.state.tasks.length;
+
+                list.innerHTML = '';
+
+                // 2. Handle Empty State
+                if (Store.state.tasks.length === 0) {
+                    list.innerHTML = `
+                <div class="flex flex-col items-center justify-center text-center p-6 h-full text-gray-400 dark:text-gray-500 animate-in fade-in zoom-in duration-300">
+                    <div class="bg-gray-50 dark:bg-dark-bg p-4 rounded-full mb-3">
+                        <i data-lucide="clipboard-list" class="w-8 h-8 opacity-50"></i>
+                    </div>
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">No tasks yet</p>
+                    <p class="text-xs mt-1 opacity-70">Click + to add one</p>
+                </div>
+            `;
+                } else {
+                    // 3. Render Tasks
+                    Store.state.tasks.forEach(task => {
+                        const li = document.createElement('li');
+                        li.className = "flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg group border border-transparent hover:border-brand-200 dark:hover:border-brand-900 transition-all";
+                        li.innerHTML = `
+                    <button onclick="tasks.toggle('${task.id}')" class="text-gray-400 hover:text-brand-500 transition-colors focus:outline-none">
+                        <i data-lucide="${task.done ? 'check-circle-2' : 'circle'}" class="${task.done ? 'text-brand-500 fill-brand-100 dark:fill-brand-900/20' : ''} w-5 h-5"></i>
+                    </button>
+                    <span class="flex-1 text-sm font-medium ${task.done ? 'line-through text-gray-400 dark:text-gray-600' : 'text-gray-700 dark:text-gray-200'} transition-all">${task.title}</span>
+                    <button onclick="tasks.delete('${task.id}')" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-md transition-all">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                `;
+                        list.appendChild(li);
+                    });
+                }
+
+                lucide.createIcons();
+
+                // Notes binding
+                const notesArea = document.getElementById('quick-notes');
+                if (notesArea) {
+                    notesArea.value = Store.state.notes || "";
+                    notesArea.oninput = () => {
+                        Store.state.notes = notesArea.value;
+                        Store.save();
+                    };
+                }
+            },
+
+            // --- Modal Logic ---
+
+            addTaskPrompt() {
+                const modal = document.getElementById('add-task-modal');
+                const input = document.getElementById('new-task-input');
+
+                if (modal && input) {
+                    modal.classList.remove('hidden');
+                    setTimeout(() => input.focus(), 50); // Focus input automatically
+
+                    // Allow pressing "Enter" to submit inside modal
+                    input.onkeydown = (e) => {
+                        if (e.key === 'Enter') this.handleModalSubmit();
+                        if (e.key === 'Escape') this.closeModal();
+                    };
+                }
+            },
+
+            handleModalSubmit() {
+                const input = document.getElementById('new-task-input');
+                const title = input.value.trim();
+
+                if (title) {
+                    Store.state.tasks.push({ id: Utils.id(), title, done: false });
+                    Store.save();
+                    this.closeModal(); // Close & Clear
+                    this.render();     // Update UI
+                }
+            },
+
+            closeModal() {
+                const modal = document.getElementById('add-task-modal');
+                const input = document.getElementById('new-task-input');
+                if (modal) modal.classList.add('hidden');
+                if (input) input.value = '';
+            },
+
+            // --- Actions ---
+
+            toggle(id) {
+                const t = Store.state.tasks.find(x => x.id === id);
+                if (t) t.done = !t.done;
+                Store.save();
+                this.render(); // Re-render to update checkbox visual
+            },
+
+            delete(id) {
+                // Direct delete (No prompts)
+                Store.state.tasks = Store.state.tasks.filter(x => x.id !== id);
+                Store.save();
+                this.render(); // Re-render to remove item
+            }
+        };
+
+        // Expose to window so HTML onclick works
+        window.tasks = Tasks;
+
+        const UI = {
+            deleteAction: null,
+
+            openDeleteModal({ title, message, onConfirm }) {
+                document.getElementById('delete-title').textContent = title;
+                document.getElementById('delete-message').textContent = message;
+                this.deleteAction = onConfirm;
+                document.getElementById('modal-delete').showModal();
+            },
+
+            closeDeleteModal() {
+                document.getElementById('modal-delete').close();
+                this.deleteAction = null;
+            },
+
+            confirmDelete() {
+                if (this.deleteAction) this.deleteAction();
+                this.closeDeleteModal();
+            }
+        };
+
+        window.UI = UI;
+
+
+        // --- Exams Module ---
+        const Exams = {
+            editingId: null,
+
+            render() {
+                const list = document.getElementById('exams-list');
+                list.innerHTML = '';
+
+                const sorted = [...Store.state.exams]
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                if (sorted.length === 0) {
+                    list.innerHTML = `<div class="col-span-full text-center py-10 text-gray-400">
+                No upcoming exams.
+            </div>`;
+                    return;
+                }
+
+                sorted.forEach(exam => {
+                    const days = Utils.getDaysDiff(exam.date);
+                    const urgency =
+                        days <= 3
+                            ? 'bg-red-100 text-red-600 dark:bg-red-900/20'
+                            : 'bg-blue-100 text-blue-600 dark:bg-blue-900/20';
+
+                    const card = document.createElement('div');
+                    card.className = "bg-white dark:bg-dark-surface p-5 rounded-xl border border-gray-200 dark:border-dark-border shadow-sm flex flex-col";
+
+                    card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="font-bold text-lg">${exam.subject}</h4>
+                        <p class="text-sm text-gray-500">${Utils.formatDate(exam.date)}</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs rounded font-semibold ${urgency}">
+                        ${days} days
+                    </span>
+                </div>
+
+                <div class="mt-3 text-sm bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                    ${exam.syllabus || 'No syllabus'}
+                </div>
+
+                <div class="flex justify-end gap-3 mt-4">
+                    <button onclick="exams.edit('${exam.id}')"
+                        class="text-blue-500 hover:text-blue-600 text-xs flex items-center gap-1">
+                        <i data-lucide="edit-2" class="w-4 h-4"></i> Edit
+                    </button>
+                    <button onclick="exams.delete('${exam.id}')"
+                        class="text-red-500 hover:text-red-600 text-xs flex items-center gap-1">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Delete
+                    </button>
+                </div>
+            `;
+
+                    list.appendChild(card);
+                });
+
+                lucide.createIcons();
+            },
+
+            openAddModal() {
+                this.editingId = null;
+                document.getElementById('modal-exam').showModal();
+                document.getElementById('exam-syllabus').value = '';
+                window.dispatchEvent(new CustomEvent('subjects-updated'));
+
+            },
+
+            edit(id) {
+                const exam = Store.state.exams.find(e => e.id === id);
+                if (!exam) return;
+
+                this.editingId = id;
+                document.getElementById('exam-subject').value = exam.subject;
+                document.getElementById('exam-date').value = exam.date;
+                document.getElementById('exam-syllabus').value = exam.syllabus || '';
+                document.getElementById('modal-exam').showModal();
+            },
+
+            saveExam() {
+                const subject = document.getElementById('exam-subject').value;
+                const date = document.getElementById('exam-date').value;
+                const syllabus = document.getElementById('exam-syllabus').value;
+
+                if (!subject || !date) return App.toast("Required fields missing", "error");
+
+                if (this.editingId) {
+                    const exam = Store.state.exams.find(e => e.id === this.editingId);
+                    Object.assign(exam, { subject, date, syllabus });
+                    App.toast("Exam updated");
+                } else {
+                    Store.state.exams.push({ id: Utils.id(), subject, date, syllabus });
+                    App.toast("Exam added");
+                }
+
+                Store.save();
+                this.editingId = null;
+                document.getElementById('modal-exam').close();
+            },
+
+            delete(id) {
+                UI.openDeleteModal({
+                    title: "Delete Exam",
+                    message: "This exam and its progress data will be deleted.",
+                    onConfirm: () => {
+                        Store.state.exams = Store.state.exams.filter(e => e.id !== id);
+                        Store.save();
+                        App.toast("Exam deleted");
+                        Exams.render();
+                    }
+                });
+            }
+
+
+        };
+
+
+        // --- Analytics Module (SVG Charts) ---
+        const Analytics = {
+            render() {
+                this.renderSubjectChart();
+                this.renderWeekChart();
+                this.renderLog();
+            },
+
+            renderSubjectChart() {
+                const container = document.getElementById('chart-subjects');
+                container.innerHTML = '';
+
+                // Aggregate data
+                const map = {};
+                Store.state.sessions.forEach(s => {
+                    map[s.subject] = (map[s.subject] || 0) + s.duration;
+                });
+
+                const max = Math.max(...Object.values(map), 1);
+
+                Object.entries(map).forEach(([subj, dur]) => {
+                    const percent = (dur / max) * 100;
+                    const hours = (dur / 3600).toFixed(1);
+
+                    const bar = document.createElement('div');
+                    bar.className = "flex flex-col items-center gap-2 group w-full";
+                    bar.innerHTML = `
+                        <div class="relative w-full bg-blue-100 dark:bg-blue-900/30 rounded-t-lg overflow-hidden flex items-end" style="height: 100%">
+                            <div class="w-full bg-brand-500 hover:bg-brand-400 transition-all duration-500" style="height: ${percent}%"></div>
+                            <div class="chart-tooltip group-hover:opacity-100 bottom-full mb-1">${hours} hrs</div>
+                        </div>
+                        <span class="text-xs truncate max-w-[60px]">${subj}</span>
+                    `;
+                    container.appendChild(bar);
+                });
+
+                if (Object.keys(map).length === 0) container.innerHTML = '<span class="text-gray-400 m-auto">No data yet</span>';
+            },
+
+            renderWeekChart() {
+                const container = document.getElementById('chart-week');
+                container.innerHTML = '';
+
+                // Get last 7 days
+                const days = [];
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i);
+                    days.push(d.toDateString());
+                }
+
+                const data = days.map(day => {
+                    const total = Store.state.sessions
+                        .filter(s => new Date(s.timestamp).toDateString() === day)
+                        .reduce((acc, curr) => acc + curr.duration, 0);
+                    return Math.round(total / 60); // minutes
+                });
+
+                const max = Math.max(...data, 10);
+                const points = data.map((val, idx) => {
+                    const x = (idx / (data.length - 1)) * 100;
+                    const y = 100 - ((val / max) * 100);
+                    return `${x},${y}`;
+                }).join(' ');
+
+                // SVG creation
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute("width", "100%");
+                svg.setAttribute("height", "100%");
+                svg.setAttribute("viewBox", "0 0 100 100");
+                svg.setAttribute("preserveAspectRatio", "none");
+
+                // Polyline
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+                line.setAttribute("fill", "none");
+                line.setAttribute("stroke", "#3b82f6");
+                line.setAttribute("stroke-width", "2");
+                line.setAttribute("points", points);
+
+                svg.appendChild(line);
+                container.appendChild(svg);
+            },
+
+            renderLog() {
+                const body = document.getElementById('session-log-body');
+                body.innerHTML = '';
+                [...Store.state.sessions].reverse().slice(0, 10).forEach(s => {
+                    const tr = document.createElement('tr');
+                    tr.className = "bg-white dark:bg-dark-surface border-b dark:border-dark-border";
+                    tr.innerHTML = `
+                        <td class="px-6 py-4">${Utils.formatDate(s.timestamp)}</td>
+                        <td class="px-6 py-4 font-medium">${s.subject}</td>
+                        <td class="px-6 py-4">${Math.floor(s.duration / 60)} min</td>
+                        <td class="px-6 py-4"><span class="bg-gray-100 dark:bg-gray-700 text-xs px-2 py-1 rounded">${s.type}</span></td>
+                    `;
+                    body.appendChild(tr);
+                });
+            }
+        };
+
+        // --- Settings Module ---
+        const Settings = {
+            init() {
+                const s = Store.state.settings;
+                document.getElementById('setting-pomo').value = s.pomodoro;
+                document.getElementById('setting-short').value = s.shortBreak;
+                document.getElementById('setting-long').value = s.longBreak;
+
+                ['setting-pomo', 'setting-short', 'setting-long'].forEach(id => {
+                    document.getElementById(id).addEventListener('change', (e) => {
+                        const key =
+                            id === 'setting-pomo' ? 'pomodoro' :
+                                id === 'setting-short' ? 'shortBreak' :
+                                    'longBreak';
+
+                        Store.state.settings[key] = parseInt(e.target.value);
+                        Store.save();
+
+                        // 🔥 THIS IS THE FIX
+                        Timer.syncWithSettings();
+                    });
+                });
+
+
+                this.renderSubjects();
+            },
+
+            renderSubjects() {
+                const div = document.getElementById('settings-subjects-list');
+                div.innerHTML = '';
+                Store.state.settings.subjects.forEach(sub => {
+                    const tag = document.createElement('div');
+                    tag.className = "bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded flex items-center gap-2 text-sm";
+                    tag.innerHTML = `${sub} <button onclick="settings.removeSubject('${sub}')" class="text-gray-400 hover:text-red-500">&times;</button>`;
+                    div.appendChild(tag);
+                });
+            },
+
+            addSubject() {
+                const val = document.getElementById('new-subject-input').value.trim();
+                if (val && !Store.state.settings.subjects.includes(val)) {
+                    Store.state.settings.subjects.push(val);
+                    Store.save();
+                    document.getElementById('new-subject-input').value = '';
+                    this.renderSubjects();
+                    window.dispatchEvent(new CustomEvent('subjects-updated'));
+
+                }
+            },
+
+            removeSubject(sub) {
+                Store.state.settings.subjects = Store.state.settings.subjects.filter(s => s !== sub);
+                Store.save();
+                this.renderSubjects();
+                window.dispatchEvent(new CustomEvent('subjects-updated'));
+
+            },
+
+            resetData() {
+                document.getElementById('modal-reset').showModal();
+            },
+
+            confirmReset() {
+                localStorage.removeItem(Store.key);
+                document.getElementById('modal-reset').close();
+                location.reload();
+            },
+
+
+
+        };
+
+        window.settings = Settings;
+
+        // --- App Controller ---
+        const App = {
+            init() {
+                Store.init();
+                Timer.init();
+                Timer.setMode('pomodoro');
+
+                // Event Listeners for State Changes
+                window.addEventListener('state-updated', () => {
+                    this.updateDashboard();
+                    Tasks.render();
+                    Exams.render();
+                    Planner.render();
+                    Analytics.render();
+                    Settings.init();
+                });
+
+                // Initial Setup
+                this.populateSubjectSelects();
+                Settings.init();
+                window.dispatchEvent(new CustomEvent('state-updated')); // Trigger initial render
+
+                // Mobile Sidebar Check
+                if (window.innerWidth < 1024) this.toggleSidebar(false);
+
+                // Default Route
+                this.navigate('dashboard');
+
+                // Expose modules to global scope
+                window.app = this;
+                window.Timer = Timer;
+                window.planner = Planner;
+                window.tasks = Tasks;
+                window.exams = Exams;
+                window.settings = Settings;
+
+                // Apply theme on init
+                Store.applyTheme();
+
+                window.addEventListener('subjects-updated', () => {
+                    this.populateSubjectSelects();
+                });
+
+            },
+
+            toggleTheme() {
+                Store.state.user.theme =
+                    Store.state.user.theme === 'light' ? 'dark' : 'light';
+
+                Store.save();
+                Store.applyTheme();
+
+                this.toast(`Switched to ${Store.state.user.theme} mode`, 'info');
+            },
+
+
+
+            toggleSidebar(forceState) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('mobile-overlay');
+                const isClosed = sidebar.classList.contains('-translate-x-full');
+
+                const shouldOpen = forceState !== undefined ? forceState : isClosed;
+
+                if (shouldOpen) {
+                    sidebar.classList.remove('-translate-x-full');
+                    overlay.classList.remove('hidden');
+                } else {
+                    sidebar.classList.add('-translate-x-full');
+                    overlay.classList.add('hidden');
+                }
+            },
+
+            navigate(viewId) {
+                // Hide all views
+                document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove(
+                    'bg-brand-50', 'text-brand-600',
+                    'dark:bg-brand-900/20', 'dark:text-brand-400',
+                    'active-nav'
+                ));
+
+                // Show target view
+                const target = document.getElementById(`view-${viewId}`);
+                if (target) {
+                    target.classList.remove('hidden');
+                    target.classList.remove('animate-fade-in');
+                    void target.offsetWidth;
+                    target.classList.add('animate-fade-in');
+                }
+
+                // Highlight Sidebar Active State
+                const navBtn = document.querySelector(`button[onclick="app.navigate('${viewId}')"]`);
+                if (navBtn) navBtn.classList.add(
+                    'bg-brand-50', 'text-brand-600',
+                    'dark:bg-brand-900/20', 'dark:text-brand-400',
+                    'active-nav'
+                );
+
+                // Update page title
+                document.getElementById('page-title').textContent = viewId.replace('-', ' ');
+
+                // Close mobile menu after navigation
+                if (window.innerWidth < 1024) this.toggleSidebar(false);
+            },
+
+            updateDashboard() {
+                // Total Time
+                const totalSeconds = Store.state.sessions.reduce((acc, s) => acc + s.duration, 0);
+                const hrs = Math.floor(totalSeconds / 3600);
+                const mins = Math.floor((totalSeconds % 3600) / 60);
+                document.getElementById('dash-total-time').textContent = `${hrs}h ${mins}m`;
+
+                // Session Count
+                document.getElementById('dash-sessions').textContent = Store.state.sessions.length;
+
+                // Streak
+                document.getElementById('streak-display').textContent = `${Store.state.streak.count} Day Streak`;
+
+                // Tasks Due
+                const due = Store.state.tasks.filter(t => !t.done).length;
+                document.getElementById('dash-tasks-due').textContent = due;
+
+                // Next Exam
+                const upcomingExams = Store.state.exams
+                    .filter(e => new Date(e.date) > new Date())
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                if (upcomingExams.length > 0) {
+                    document.getElementById('dash-next-exam').textContent = upcomingExams[0].subject;
+                    document.getElementById('dash-exam-days').textContent = `${Utils.getDaysDiff(upcomingExams[0].date)} days left`;
+                } else {
+                    document.getElementById('dash-next-exam').textContent = "No upcoming exams";
+                    document.getElementById('dash-exam-days').textContent = "---";
+                }
+
+                // Today's Plan
+                const today = new Date().toLocaleDateString('en-US', { weekday: 'short' });
+                const list = document.getElementById('dash-schedule-list');
+                const todaysSlots = Store.state.timetable
+                    .filter(s => s.day === today)
+                    .sort((a, b) => parseInt(a.start) - parseInt(b.start));
+
+                if (todaysSlots.length > 0) {
+                    list.innerHTML = '';
+                    todaysSlots.forEach(s => {
+                        const div = document.createElement('div');
+                        div.className = "flex items-center gap-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800";
+                        div.innerHTML = `
+                    <div class="font-mono text-sm font-semibold text-brand-600">${s.start}</div>
+                    <div class="h-4 w-px bg-gray-300 dark:bg-gray-700"></div>
+                    <div class="font-medium">${s.subject}</div>
+                `;
+                        list.appendChild(div);
+                    });
+                } else {
+                    list.innerHTML = `<div class="text-center py-4 text-gray-400 text-sm">Nothing scheduled for today. Enjoy!</div>`;
+                }
+            },
+
+            populateSubjectSelects() {
+                const opts = Store.state.settings.subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+                document.querySelectorAll('select[id*="subject"]').forEach(sel => {
+                    const current = sel.value;
+                    sel.innerHTML = opts;
+                    if (current) sel.value = current;
+                });
+            },
+
+            toast(msg, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const el = document.createElement('div');
+                const colorClass = type === 'error' ? 'border-red-500' : 'border-brand-500';
+                el.className = `bg-white dark:bg-dark-surface border-l-4 ${colorClass} shadow-lg rounded p-4 flex items-center gap-3 animate-slide-up max-w-xs pointer-events-auto`;
+                el.innerHTML = `<span class="text-sm font-medium">${msg}</span>`;
+                container.appendChild(el);
+                setTimeout(() => {
+                    el.style.opacity = '0';
+                    setTimeout(() => el.remove(), 300);
+                }, 3000);
+            },
+
+            // --- Exams & Timetable CRUD ---
+            addExam(subject, date) {
+                if (!subject || !date) return this.toast("Please provide both subject and date", "error");
+                const id = Date.now();
+                Store.state.exams.push({ id, subject, date });
+                Store.save();
+                window.dispatchEvent(new CustomEvent('state-updated'));
+                this.toast(`Exam for ${subject} added on ${date}`, 'info');
+            },
+
+            editExam(id, subject, date) {
+                const exam = Store.state.exams.find(e => e.id === id);
+                if (!exam) return this.toast("Exam not found", "error");
+                exam.subject = subject || exam.subject;
+                exam.date = date || exam.date;
+                Store.save();
+                window.dispatchEvent(new CustomEvent('state-updated'));
+                this.toast(`Exam updated to ${subject} on ${date}`, 'info');
+            },
+
+            deleteExam(id) {
+                Store.state.exams = Store.state.exams.filter(e => e.id !== id);
+                Store.save();
+                window.dispatchEvent(new CustomEvent('state-updated'));
+                this.toast("Exam deleted", 'info');
+            },
+
+            addTimetableSlot(day, start, subject) {
+                if (!day || !start || !subject) return this.toast("Please provide day, time, and subject", "error");
+                const id = Date.now();
+                Store.state.timetable.push({ id, day, start, subject });
+                Store.save();
+                window.dispatchEvent(new CustomEvent('state-updated'));
+                this.toast(`Scheduled ${subject} on ${day} at ${start}`, 'info');
+            },
+
+            editTimetableSlot(id, day, start, subject) {
+                const slot = Store.state.timetable.find(s => s.id === id);
+                if (!slot) return this.toast("Timetable slot not found", "error");
+                slot.day = day || slot.day;
+                slot.start = start || slot.start;
+                slot.subject = subject || slot.subject;
+                Store.save();
+                window.dispatchEvent(new CustomEvent('state-updated'));
+                this.toast(`Timetable slot updated to ${subject} on ${day} at ${start}`, 'info');
+            },
+
+            deleteTimetableSlot(id) {
+                Store.state.timetable = Store.state.timetable.filter(s => s.id !== id);
+                Store.save();
+                window.dispatchEvent(new CustomEvent('state-updated'));
+                this.toast("Timetable slot deleted", 'info');
+            }
+        };
+
+        // Boot App
+        document.addEventListener('DOMContentLoaded', () => App.init());
+
+        function showUpdateToast(registration) {
+            const container = document.getElementById("toast-container");
+
+            const toast = document.createElement("div");
+            toast.className =
+                "bg-white dark:bg-dark-surface border-l-4 border-brand-500 shadow-lg rounded p-4 flex items-center justify-between gap-4 animate-slide-up max-w-sm";
+
+            toast.innerHTML = `
+        <span class="text-sm font-medium">
+            🔄 Update available
+        </span>
+        <button class="text-brand-600 dark:text-brand-400 font-semibold text-sm hover:underline">
+            Refresh
+        </button>
+    `;
+
+            toast.querySelector("button").addEventListener("click", () => {
+                if (registration.waiting) {
+                    registration.waiting.postMessage("SKIP_WAITING");
+                }
+            });
+
+            container.appendChild(toast);
+        }
+
+
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", async () => {
+                try {
+                    const reg = await navigator.serviceWorker.register("/service-worker.js");
+                    console.log("✅ Service Worker Registered");
+
+                    // 🔁 Reload page when new SW takes control
+                    navigator.serviceWorker.addEventListener("controllerchange", () => {
+                        window.location.reload();
+                    });
+
+                    // 🔔 Detect updates
+                    reg.addEventListener("updatefound", () => {
+                        const newWorker = reg.installing;
+
+                        newWorker.addEventListener("statechange", () => {
+                            if (
+                                newWorker.state === "installed" &&
+                                navigator.serviceWorker.controller
+                            ) {
+                                showUpdateToast(reg);
+                            }
+                        });
+                    });
+
+                } catch (err) {
+                    console.error("❌ Service Worker failed", err);
+                }
+            });
+        }
+
+
+        let deferredPrompt;
+        const installBtn = document.getElementById("installBtn");
+
+        window.addEventListener("beforeinstallprompt", (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.remove("hidden");
+        });
+
+        installBtn?.addEventListener("click", async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            if (installBtn) {
+                installBtn.classList.remove("hidden");
+            }
+
+        });
+
+
+
+
+    </script>
+</body>
+
+</html>
