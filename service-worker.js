@@ -1,4 +1,4 @@
-const STATIC_CACHE = "study-tracker-static-v2";
+const STATIC_CACHE = "study-tracker-v3";
 const OFFLINE_URL = "/index.html";
 
 const ASSETS = [
