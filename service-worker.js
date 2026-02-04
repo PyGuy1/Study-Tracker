@@ -1,13 +1,13 @@
 const STATIC_CACHE = "study-tracker-v3";
-const OFFLINE_URL = "/index.html";
+const OFFLINE_URL = "./index.html";
 
 const ASSETS = [
-  "/",
-  "/index.html",
-  "/manifest.json",
-  "/Study-tracker.png",
-  "/Study-tracker-png.png",
-  "/Study-Tracker-poster.png"
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./Study-tracker.png",
+  "./Study-tracker-png.png",
+  "./Study-Tracker-poster.png"
 ];
 
 // Install
